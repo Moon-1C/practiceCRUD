@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RecordRequest {
+public class RecordRequestSave {
 
 
     private String title;
