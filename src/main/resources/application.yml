@@ -2,6 +2,7 @@ spring:
   config:
     use-legacy-processing: true
   profiles:
+    active: local
     include:
       - flyway
       - mysql

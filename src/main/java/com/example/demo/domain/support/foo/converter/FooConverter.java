@@ -4,12 +4,16 @@ import com.example.demo.domain.dto.request.FooDomainRequest;
 import com.example.demo.domain.dto.response.FooDomainResponse;
 import com.example.demo.domain.model.Foo;
 import com.example.demo.repository.entity.FooEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class FooConverter {
 
 	public Foo from(FooDomainRequest source) {
+
+
 		return Foo.builder().name(source.getName()).build();
 	}
 

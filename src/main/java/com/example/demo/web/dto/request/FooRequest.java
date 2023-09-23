@@ -1,10 +1,7 @@
 package com.example.demo.web.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
+import org.springframework.stereotype.Service;
 
 @Getter
 @ToString

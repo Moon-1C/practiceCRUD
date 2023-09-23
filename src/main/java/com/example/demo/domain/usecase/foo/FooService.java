@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,8 @@ public class FooService {
 	@Transactional
 	public FooDomainResponse execute(FooDomainRequest request) {
 		Foo foo = fooConverter.from(request);
+
+		log.info("========foo name ======= : {}",foo.getName());
 
 		log.info("======= save foo =======");
 		fooRepository.save(fooConverter.toEntity(foo));
