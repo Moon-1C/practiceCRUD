@@ -36,4 +36,13 @@ public class ApiResponse<B> extends ResponseEntity<B> {
 		private String message;
 		private String code;
 	}
+	@Getter
+	@AllArgsConstructor
+	public static class SuccessBodyWithNoData implements Serializable {
+
+		private String message;
+		private String code;
+	}
+
+
 }

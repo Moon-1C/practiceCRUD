@@ -6,6 +6,14 @@ import org.springframework.http.HttpStatus;
 @UtilityClass
 public class ApiResponseGenerator {
 
+	public static ApiResponse<ApiResponse.SuccessBodyWithNoData> successWithNoData(final HttpStatus status) {
+		return new ApiResponse<>(
+				new ApiResponse.SuccessBodyWithNoData(
+						MessageCode.SUCCESS.getValue(), MessageCode.SUCCESS.getCode()),
+				status);
+	}
+
+
 	public static ApiResponse<ApiResponse.SuccessBody<Void>> success(final HttpStatus status) {
 		return new ApiResponse<>(
 				new ApiResponse.SuccessBody<>(
