@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RecordRequestUpdate {
 
-    private Long id;
+    private Long rid;
 
     private String title;
 

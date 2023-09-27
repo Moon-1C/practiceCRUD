@@ -5,6 +5,8 @@ import com.example.demo.repository.entity.RecordEntity;
 import com.example.demo.repository.repository.RecordRepository;
 import com.example.demo.web.dto.request.RecordRequestSave;
 import com.example.demo.web.dto.request.RecordRequestUpdate;
+import com.example.demo.web.dto.response.RecordResponse;
+import com.example.demo.web.support.converter.RecordConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,17 +17,19 @@ import java.util.Optional;
 public class RecordService {
 
     private final RecordRepository recordRepository;
+    private final RecordConverter recordConverter;
 
-    public RecordEntity saveRecord(RecordRequestSave recordRequest) {
+    public RecordResponse saveRecord(RecordRequestSave recordRequest) {
         RecordEntity recordEntity = new RecordEntity();
         recordEntity.setTitle(recordRequest.getTitle());
         recordEntity.setContent(recordRequest.getContent());
         recordRepository.save(recordEntity);
-        return recordEntity;
+
+        return recordConverter.recordEntityToResponse(recordEntity);
     }
 
-    public RecordEntity getRecordById(Long id) {
-        Optional<RecordEntity> findRecordEntity = recordRepository.findById(id);
+    public RecordEntity getRecordEntityByRid(Long rid) {
+        Optional<RecordEntity> findRecordEntity = recordRepository.findById(rid);
         if (findRecordEntity.isPresent()) {
             return findRecordEntity.get();
         } else {
@@ -33,18 +37,28 @@ public class RecordService {
         }
     }
 
-    public RecordEntity update( RecordRequestUpdate recordRequest) {
+    public RecordResponse getRecordResponseByRid(Long id) {
+        return recordConverter.recordEntityToResponse(getRecordEntityByRid(id));
 
-        RecordEntity recordEntity = getRecordById(recordRequest.getId());
+    }
+
+
+
+
+    public RecordResponse update( RecordRequestUpdate recordRequest) {
+
+        RecordEntity recordEntity = getRecordEntityByRid(recordRequest.getRid());
+
 
         recordEntity.setTitle(recordRequest.getTitle());
         recordEntity.setContent(recordRequest.getContent());
+        recordRepository.save(recordEntity);
 
-        return recordEntity;
+        return recordConverter.recordEntityToResponse(recordEntity);
     }
 
     public void delete(Long id) {
-        RecordEntity findRecord = getRecordById(id);
+        RecordEntity findRecord = getRecordEntityByRid(id);
         recordRepository.delete(findRecord);
 
     }
