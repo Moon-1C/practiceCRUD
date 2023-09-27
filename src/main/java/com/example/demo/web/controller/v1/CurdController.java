@@ -32,7 +32,7 @@ public class CurdController {
 
 
     @PostMapping("/users")
-    public ApiResponse<ApiResponse.SuccessBody<TokenResponse>> users(@RequestBody UserRequest userRequest,HttpServletRequest request ) {
+    public ApiResponse<ApiResponse.SuccessBody<TokenResponse>> users(@RequestBody UserRequest userRequest) {
 
         Long userId=null;
         try{
