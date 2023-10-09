@@ -1,82 +1,35 @@
 package com.example.demo.repository.entity;
 
-//import com.example.demo.web.dto.Token;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+
+import com.example.demo.repository.BaseEntity;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 
-@Entity
+import static com.example.demo.repository.entity.UserEntity.USER_PREFIX;
+
 @Getter
-@Setter
-public class UserEntity implements UserDetails {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@ToString
+@SuperBuilder(toBuilder = true)
+@Entity(name = USER_PREFIX + "_entity")
+@Table(name = USER_PREFIX + "_tb")
+@SQLDelete(sql = "UPDATE member_tb SET deleted=true WHERE id = ?")
+public class UserEntity extends BaseEntity {
 
-    public UserEntity() {
+    public static final String USER_PREFIX = "user";
 
-    }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @NotNull
+    @Column(name = USER_PREFIX + "_name",nullable = false)
     private String name;
 
-    private Integer age;
-
-    @Email
-    private String email;
-
-    @NotNull
+    @Column(name = USER_PREFIX + "_password",nullable = false)
     private String password;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Builder.Default
-    private List<String> roles = new ArrayList<>();
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
-    }
-
-
-        @Override
-    public String getUsername() {
-        return name;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-//    @Embedded
-//    private Token authToken;
+    @Column(name = USER_PREFIX + "_email",nullable = false)
+    private String email;
 
 
 }
