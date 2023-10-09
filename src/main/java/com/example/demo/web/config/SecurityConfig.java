@@ -1,43 +1,102 @@
 package com.example.demo.web.config;
 
-import com.example.demo.web.jwt.JwtAuthenticationFilter;
-import com.example.demo.web.jwt.JwtTokenProvider;
+import com.example.demo.security.authentication.token.TokenAuthProvider;
+import com.example.demo.security.filter.token.TokenAuthenticationFilter;
+import com.example.demo.security.handler.DelegatedAccessDeniedHandler;
+import com.example.demo.security.handler.DelegatedAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+//import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+//import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final DelegatedAuthenticationEntryPoint authenticationEntryPoint;
+    private final DelegatedAccessDeniedHandler accessDeniedHandler;
+    private final TokenAuthProvider tokenAuthProvider;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .httpBasic().disable()
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeRequests()
-                .antMatchers("/api/v1/users").permitAll()
-                .antMatchers("/api/v1/**").hasRole("USER")
-                .anyRequest().authenticated()
-                .and()
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+    @Profile("!prod")
+    public SecurityFilterChain localSecurityFilterChain(HttpSecurity http) throws Exception {
+        http.csrf().disable();
+        http.formLogin().disable();
+        http.httpBasic().disable();
+        http.authorizeRequests()
+                .antMatchers(
+                        HttpMethod.GET,
+                        "/swagger-ui/*",
+                        "/api-docs/*",
+                        "/openapi3.yaml",
+                        "/actuator/health",
+                        "/reports/**",
+                        "/error",
+                        "/beta/**")
+                .permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/users", "/api/v1/members/tokens", "/beta/*")
+                .permitAll()
+                .antMatchers("/api/v1/**")
+                .authenticated()
+                .anyRequest()
+                .denyAll();
+
+        http.addFilterAt(
+                generateAuthenticationFilter(), AbstractPreAuthenticatedProcessingFilter.class);
+
+        http.exceptionHandling()
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler);
+
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         return http.build();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    @Profile(value = "prod")
+    public SecurityFilterChain prodSecurityFilterChain(HttpSecurity http) throws Exception {
+        http.csrf().disable();
+        http.formLogin().disable();
+        http.httpBasic().disable();
+
+        http.authorizeRequests()
+                .antMatchers(
+                        HttpMethod.GET,
+                        "/openapi3.yaml",
+                        "/actuator/health",
+                        "/reports/**",
+                        "/error",
+                        "/beta/**")
+                .permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/members", "/api/v1/members/tokens", "/beta/*")
+                .permitAll()
+                .antMatchers("/api/v1/**")
+                .authenticated()
+                .anyRequest()
+                .denyAll();
+
+        http.addFilterAt(
+                generateAuthenticationFilter(), AbstractPreAuthenticatedProcessingFilter.class);
+
+        http.exceptionHandling()
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler);
+
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        return http.build();
+    }
+
+    public TokenAuthenticationFilter generateAuthenticationFilter() {
+        TokenAuthenticationFilter tokenAuthenticationFilter = new TokenAuthenticationFilter();
+        tokenAuthenticationFilter.setAuthenticationManager(new ProviderManager(tokenAuthProvider));
+        return tokenAuthenticationFilter;
     }
 }
